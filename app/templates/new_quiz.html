@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}New Quiz — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+
+  <div class="page-header">
+    <h1>Create a New Quiz</h1>
+    <p class="text-muted">Upload a PDF/TXT file or paste your notes below.</p>
+  </div>
+
+  <!-- Upload card -->
+  <div class="upload-card" id="uploadCard">
+
+    <!-- Drop zone -->
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-zone-inner">
+        <div class="upload-icon">📤</div>
+        <h2 id="dropLabel">Drag &amp; drop a file here</h2>
+        <p class="text-muted">PDF or TXT &mdash; up to 16 MB</p>
+        <button type="button" class="btn btn-outline" id="browseBtn">Browse file</button>
+        <input type="file" id="fileInput" accept=".pdf,.txt" hidden />
+      </div>
+    </div>
+
+    <div class="divider">OR</div>
+
+    <!-- Paste area -->
+    <div class="form-group">
+      <label for="textInput">Paste your study notes</label>
+      <textarea id="textInput" class="form-control" rows="8"
+        placeholder="Paste your notes here (minimum 50 characters)…"></textarea>
+    </div>
+
+    <div id="errorBox" class="alert alert-danger" style="display:none;"></div>
+
+    <button id="generateBtn" class="btn btn-primary btn-block">Generate Quiz</button>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-card" id="loadingCard" style="display:none;">
+    <div class="spinner"></div>
+    <h2>Generating your quiz…</h2>
+    <p class="text-muted">The AI is crafting 10 questions. This takes 5–20 seconds.</p>
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Your Dashboard</h1>
+      <p class="text-muted">Welcome back, <strong>{{ current_user.username }}</strong>!</p>
+    </div>
+    <a href="{{ url_for('quiz.new_quiz') }}" class="btn btn-primary">+ New Quiz</a>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-value">{{ stats.total_quizzes }}</span>
+      <span class="stat-label">Quizzes Created</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ stats.total_attempts }}</span>
+      <span class="stat-label">Total Attempts</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">
+        {% if stats.avg_score is not none %}{{ stats.avg_score }}%{% else %}—{% endif %}
+      </span>
+      <span class="stat-label">Average Score</span>
+    </div>
+  </div>
+
+  <!-- Quiz list -->
+  <section class="quiz-list-section">
+    <h2>Your Quizzes</h2>
+
+    {% if quiz_data %}
+      <div class="quiz-list">
+        {% for item in quiz_data %}
+        {% set quiz = item.quiz %}
+        {% set latest = item.latest_attempt %}
+        {% set best = item.best_attempt %}
+        <div class="quiz-list-card">
+
+          <div class="qlc-info">
+            <h3 class="qlc-title">{{ quiz.title }}</h3>
+            <p class="qlc-meta">
+              {{ quiz.question_count }} questions &bull;
+              Created {{ quiz.created_at.strftime('%b %d, %Y') }} &bull;
+              {{ quiz.attempt_count }} attempt{{ 's' if quiz.attempt_count != 1 }}
+            </p>
+            {% if quiz.source_summary %}
+              <p class="qlc-summary">{{ quiz.source_summary[:120] }}{% if quiz.source_summary|length > 120 %}…{% endif %}</p>
+            {% endif %}
+          </div>
+
+          <div class="qlc-scores">
+            {% if latest %}
+              <div class="score-badge
+                {% if latest.percentage >= 80 %}score-good
+                {% elif latest.percentage >= 50 %}score-mid
+                {% else %}score-low{% endif %}">
+                Last: {{ latest.score }}/{{ latest.total }}
+              </div>
+            {% endif %}
+            {% if best and best.id != (latest.id if latest else -1) %}
+              <div class="score-badge score-best">Best: {{ best.score }}/{{ best.total }}</div>
+            {% endif %}
+          </div>
+
+          <div class="qlc-actions">
+            <a href="{{ url_for('quiz.take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm">
+              {% if latest %}Retake{% else %}Start{% endif %}
+            </a>
+            {% if latest %}
+              <a href="{{ url_for('quiz.review_quiz', quiz_id=quiz.id, attempt_id=latest.id) }}" class="btn btn-outline btn-sm">Results</a>
+            {% endif %}
+            <form method="POST" action="{{ url_for('quiz.delete_quiz', quiz_id=quiz.id) }}"
+                  onsubmit="return confirm('Delete this quiz? This cannot be undone.');" style="display:inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No quizzes yet</h3>
+        <p>Create your first quiz to get started.</p>
+        <a href="{{ url_for('quiz.new_quiz') }}" class="btn btn-primary">Create a Quiz</a>
+      </div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

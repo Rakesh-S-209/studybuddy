@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }} — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+
+  <!-- Quiz header -->
+  <div class="quiz-page-header">
+    <div>
+      <h1>{{ quiz.title }}</h1>
+      <p class="text-muted">Answer all {{ questions|length }} questions, then submit.</p>
+    </div>
+    <div class="question-counter-pill">
+      <span id="answeredCount">0</span> / {{ questions|length }} answered
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill" style="width: 0%;"></div>
+  </div>
+
+  <form method="POST" action="{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}" id="quizForm">
+
+    {% for q in questions %}
+    {% set q_index = loop.index0 %}
+    <div class="question-card" id="qcard-{{ loop.index }}">
+      <div class="question-num">Question {{ loop.index }}</div>
+      <p class="question-text">{{ q.question_text }}</p>
+
+      <div class="options">
+        {% for letter, text in q.options.items() %}
+        <label class="option" for="q{{ q.id }}_{{ letter }}">
+          <input
+            type="radio"
+            id="q{{ q.id }}_{{ letter }}"
+            name="answer_{{ q.id }}"
+            value="{{ letter }}"
+            class="option-radio"
+            data-qidx="{{ q_index }}"
+          />
+          <span class="option-letter">{{ letter }}</span>
+          <span class="option-text">{{ text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div id="submitErrorBox" class="alert alert-danger" style="display:none;">
+      Please answer all questions before submitting.
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Submit Quiz</button>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const totalQuestions = {{ questions|length }};
+  let answered = new Set();
+
+  document.querySelectorAll('.option-radio').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const idx = radio.dataset.qidx;
+      answered.add(idx);
+
+      // Highlight selected option
+      const card = radio.closest('.question-card');
+      card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      radio.closest('.option').classList.add('selected');
+
+      // Update counter & progress bar
+      document.getElementById('answeredCount').textContent = answered.size;
+      const pct = (answered.size / totalQuestions) * 100;
+      document.getElementById('progressFill').style.width = pct + '%';
+    });
+  });
+
+  document.getElementById('quizForm').addEventListener('submit', function(e) {
+    if (answered.size < totalQuestions) {
+      e.preventDefault();
+      document.getElementById('submitErrorBox').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+</script>
+{% endblock %}

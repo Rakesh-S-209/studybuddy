@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Results — {{ quiz.title }} — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+
+  <h1 class="page-title">Quiz Results</h1>
+  <p class="text-muted">{{ quiz.title }}</p>
+
+  <!-- Score card -->
+  <div class="score-card">
+    <div class="score-circle
+      {% if attempt.percentage >= 80 %}score-circle-good
+      {% elif attempt.percentage >= 50 %}score-circle-mid
+      {% else %}score-circle-low{% endif %}">
+      <span class="score-big">{{ attempt.score }}</span>
+      <span class="score-denom">/ {{ attempt.total }}</span>
+    </div>
+    <div class="score-meta">
+      <p class="score-pct">{{ attempt.percentage }}%</p>
+      <p class="score-msg">
+        {% if attempt.percentage == 100 %}🎉 Perfect score!
+        {% elif attempt.percentage >= 80 %}✨ Great job!
+        {% elif attempt.percentage >= 60 %}👍 Good effort!
+        {% elif attempt.percentage >= 40 %}📚 Keep studying!
+        {% else %}💪 Review and try again!
+        {% endif %}
+      </p>
+      <p class="text-muted score-date">Completed {{ attempt.completed_at.strftime('%b %d, %Y at %H:%M') }}</p>
+    </div>
+  </div>
+
+  <!-- Review items (server-side, no JS needed) -->
+  <div class="review-list">
+    {% for q in questions %}
+      {# We don't have the submitted answers stored in DB, so we show correct answers + explanation #}
+      <div class="review-item">
+        <p class="review-q-num">Question {{ loop.index }}</p>
+        <p class="review-q-text">{{ q.question_text }}</p>
+
+        <div class="review-options">
+          {% for letter, text in q.options.items() %}
+            <div class="review-option {% if letter == q.correct_answer %}review-correct{% endif %}">
+              <span class="option-letter">{{ letter }}</span>
+              <span>{{ text }}</span>
+              {% if letter == q.correct_answer %}<span class="correct-badge">✓ Correct</span>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if q.explanation %}
+          <div class="review-explanation">
+            💡 <em>{{ q.explanation }}</em>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Actions -->
+  <div class="review-actions">
+    <a href="{{ url_for('quiz.take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Retake Quiz</a>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
+  </div>
+
+</div>
+{% endblock %}

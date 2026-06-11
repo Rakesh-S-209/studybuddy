@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}StudyBuddy — AI-Powered Quiz Generator{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">Turn Your Notes Into a Quiz <span class="gradient-text">Instantly</span></h1>
+    <p class="hero-subtitle">
+      Upload a PDF, paste your study notes, and let AI generate a personalised 10-question quiz in seconds.
+      Track your progress, retake quizzes, and ace every exam.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Get Started — It's Free</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Log In</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <div class="container">
+    <h2 class="section-title">Everything you need to study smarter</h2>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>PDF &amp; Text Support</h3>
+        <p>Upload any PDF or paste raw text. StudyBuddy extracts the content and gets to work.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI-Generated Questions</h3>
+        <p>State-of-the-art language models generate varied, relevant MCQs with explanations.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Progress Dashboard</h3>
+        <p>See all your quizzes, track average scores, and revisit past results at any time.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Retake Any Quiz</h3>
+        <p>Retake saved quizzes as many times as you want and watch your scores improve.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

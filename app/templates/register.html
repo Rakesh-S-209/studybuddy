@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-subtitle">Start generating AI-powered quizzes for free</p>
+
+    <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-control"
+          placeholder="studybuddy_user"
+          required
+          minlength="3"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-control"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-eye-wrapper">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            placeholder="Min. 8 characters"
+            required
+            minlength="8"
+            autocomplete="new-password"
+          />
+          <button type="button" class="eye-btn" onclick="togglePassword('password', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password</label>
+        <div class="input-eye-wrapper">
+          <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            class="form-control"
+            placeholder="Repeat your password"
+            required
+            autocomplete="new-password"
+          />
+          <button type="button" class="eye-btn" onclick="togglePassword('confirm_password', this)">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+    </p>
+  </div>
+</div>
+
+<script>
+function togglePassword(fieldId, btn) {
+  const field = document.getElementById(fieldId);
+  if (field.type === 'password') { field.type = 'text'; btn.textContent = '🙈'; }
+  else { field.type = 'password'; btn.textContent = '👁'; }
+}
+</script>
+{% endblock %}
