@@ -150,6 +150,8 @@ class Attempt(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey("quizzes.id"), nullable=False)
     score = db.Column(db.Integer, nullable=False, default=0)
     total = db.Column(db.Integer, nullable=False, default=10)
+    # JSON string: {"<question_id>": "A"|"B"|"C"|"D", ...}
+    answers_json = db.Column(db.Text, nullable=True)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     @property
@@ -158,6 +160,18 @@ class Attempt(db.Model):
         if self.total == 0:
             return 0.0
         return round((self.score / self.total) * 100, 1)
+
+    @property
+    def answers(self) -> dict:
+        """Return submitted answers as {question_id (int): letter (str)}."""
+        if not self.answers_json:
+            return {}
+        import json
+        try:
+            # Keys are stored as strings in JSON; cast back to int
+            return {int(k): v for k, v in json.loads(self.answers_json).items()}
+        except (ValueError, TypeError):
+            return {}
 
     def __repr__(self) -> str:
         return f"<Attempt {self.id}: {self.score}/{self.total}>"

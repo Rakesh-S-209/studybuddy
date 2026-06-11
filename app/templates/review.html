@@ -7,7 +7,7 @@
   <h1 class="page-title">Quiz Results</h1>
   <p class="text-muted">{{ quiz.title }}</p>
 
-  <!-- Score card -->
+  <!-- ===== Score card ===== -->
   <div class="score-card">
     <div class="score-circle
       {% if attempt.percentage >= 80 %}score-circle-good
@@ -26,38 +26,79 @@
         {% else %}💪 Review and try again!
         {% endif %}
       </p>
-      <p class="text-muted score-date">Completed {{ attempt.completed_at.strftime('%b %d, %Y at %H:%M') }}</p>
+      <p class="text-muted score-date">
+        Completed {{ attempt.completed_at.strftime('%b %d, %Y at %H:%M') }}
+      </p>
     </div>
   </div>
 
-  <!-- Review items (server-side, no JS needed) -->
+  <!-- ===== Per-question review ===== -->
   <div class="review-list">
     {% for q in questions %}
-      {# We don't have the submitted answers stored in DB, so we show correct answers + explanation #}
-      <div class="review-item">
-        <p class="review-q-num">Question {{ loop.index }}</p>
+      {#
+        chosen   — what this user picked (e.g. "B"), or "" if skipped
+        is_correct — True only when chosen matches the correct answer
+      #}
+      {% set chosen = user_answers.get(q.id, "") %}
+      {% set is_correct = (chosen == q.correct_answer) %}
+
+      <div class="review-item {% if is_correct %}review-item-correct{% elif chosen %}review-item-wrong{% else %}review-item-skipped{% endif %}">
+
+        <!-- Question header -->
+        <div class="review-q-header">
+          <p class="review-q-num">Question {{ loop.index }}</p>
+          {% if is_correct %}
+            <span class="review-verdict verdict-correct">✓ Correct</span>
+          {% elif chosen %}
+            <span class="review-verdict verdict-wrong">✗ Wrong</span>
+          {% else %}
+            <span class="review-verdict verdict-skipped">— Skipped</span>
+          {% endif %}
+        </div>
+
         <p class="review-q-text">{{ q.question_text }}</p>
 
+        <!-- Options: green = correct answer, red = user's wrong pick -->
         <div class="review-options">
           {% for letter, text in q.options.items() %}
-            <div class="review-option {% if letter == q.correct_answer %}review-correct{% endif %}">
+            {% set is_the_answer   = (letter == q.correct_answer) %}
+            {% set is_user_choice  = (letter == chosen) %}
+            {% set is_wrong_choice = (is_user_choice and not is_the_answer) %}
+
+            <div class="review-option
+              {% if is_the_answer %}review-opt-correct
+              {% elif is_wrong_choice %}review-opt-wrong
+              {% endif %}">
+
               <span class="option-letter">{{ letter }}</span>
-              <span>{{ text }}</span>
-              {% if letter == q.correct_answer %}<span class="correct-badge">✓ Correct</span>{% endif %}
+              <span class="option-text-body">{{ text }}</span>
+
+              <span class="review-badges">
+                {% if is_the_answer %}
+                  <span class="badge badge-correct">✓ Correct answer</span>
+                {% endif %}
+                {% if is_wrong_choice %}
+                  <span class="badge badge-wrong">✗ Your choice</span>
+                {% elif is_user_choice and is_the_answer %}
+                  <span class="badge badge-picked-correct">✓ Your choice</span>
+                {% endif %}
+              </span>
             </div>
           {% endfor %}
         </div>
 
+        <!-- Explanation (if available) -->
         {% if q.explanation %}
           <div class="review-explanation">
             💡 <em>{{ q.explanation }}</em>
           </div>
         {% endif %}
+
       </div>
     {% endfor %}
   </div>
 
-  <!-- Actions -->
+  <!-- ===== Actions ===== -->
   <div class="review-actions">
     <a href="{{ url_for('quiz.take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Retake Quiz</a>
     <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>

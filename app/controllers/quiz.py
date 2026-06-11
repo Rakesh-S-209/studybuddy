@@ -296,6 +296,8 @@ def submit_quiz(quiz_id: int):
     Grade a submitted quiz.
 
     Expects form fields: answer_<question_id> = "A"|"B"|"C"|"D"
+    Stores the per-question selections in Attempt.answers_json so the
+    review page can show exactly what the user chose.
     """
     quiz = Quiz.query.get_or_404(quiz_id)
     questions = quiz.questions.all()
@@ -306,16 +308,18 @@ def submit_quiz(quiz_id: int):
     for q in questions:
         key = f"answer_{q.id}"
         chosen = request.form.get(key, "").strip().upper()[:1]
-        answers[q.id] = chosen
+        # Store empty string for unanswered questions rather than crashing
+        answers[q.id] = chosen if chosen in ("A", "B", "C", "D") else ""
         if chosen == q.correct_answer:
             score += 1
 
-    # Save attempt
+    # Persist attempt with the answers snapshot
     attempt = Attempt(
         user_id=current_user.id,
         quiz_id=quiz.id,
         score=score,
         total=len(questions),
+        answers_json=json.dumps(answers),
     )
     db.session.add(attempt)
     db.session.commit()
@@ -338,11 +342,16 @@ def review_quiz(quiz_id: int, attempt_id: int):
 
     questions = quiz.questions.all()
 
+    # user_answers: {question_id (int): chosen_letter (str)}
+    # Falls back to empty dict for old attempts that predate answers_json
+    user_answers = attempt.answers
+
     return render_template(
         "review.html",
         quiz=quiz,
         attempt=attempt,
         questions=questions,
+        user_answers=user_answers,
     )
 
 
